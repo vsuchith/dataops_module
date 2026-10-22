@@ -1,0 +1,22 @@
+{
+  "artifact_id": "ds.transactions",
+  "version": "v1.0.0",
+  "kind": "structured_table",
+  "uri": "file:///data/bronze/transactions/v1",
+  "checksum": {
+    "algorithm": "sha256",
+    "value": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "state": "published",
+  "media_type": "application/parquet",
+  "producer_run_id": "run-20260730-001",
+  "metadata": {
+    "row_count": "1000"
+  },
+  "provider_replay": {
+    "lakefs_repo": "fraud-data",
+    "lakefs_branch": "main",
+    "lakefs_commit": "abc123",
+    "iceberg_snapshot": "snap-42"
+  }
+}

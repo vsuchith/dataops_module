@@ -1,0 +1,13 @@
+{
+  "manifest_id": "ref.corpus.demo.document_manifest",
+  "version": "v1",
+  "documents": [
+    {
+      "source_id": "doc_alpha",
+      "uri": "profiles/reference_corpus/fixtures/doc_alpha.md",
+      "checksum": "abc123",
+      "media_type": "markdown"
+    }
+  ],
+  "partition_strategy": "by_document"
+}

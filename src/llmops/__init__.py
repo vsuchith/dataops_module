@@ -1,18 +1,15 @@
 """
-LLMOps Module - Language Model Domain
-=====================================
+LLMOps Module - Language Model Operations
+=========================================
 
-This module contains LLM/RAG-specific code (stub for future expansion):
-- Dagster pipelines (pipelines/)
-
-Future planned components:
-- Corpus ingestion pipelines
-- Embedding generation
-- Vector store management
-- RAG inference API
+Operational corpus factory for the reference_corpus profile (E4):
+- Canonical document/element preparation via kernel ports
+- Deterministic local embeddings and reference index
+- CorpusVersionRef handoff for Genera (ADR-008)
 
 Usage:
-    from llmops.pipelines import defs
+    from src.llmops.compatibility.corpus import run_corpus_pipeline
+    from src.llmops.pipelines.definitions import LLMOPS_ASSETS
 """
 
 __all__ = []

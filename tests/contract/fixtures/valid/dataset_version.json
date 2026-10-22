@@ -1,0 +1,9 @@
+{
+  "dataset_id": "fraud.transactions",
+  "version_id": "v2026.07.30",
+  "modality": "structured",
+  "physical_artifact_ids": ["ds.transactions"],
+  "schema_or_manifest_ref": "schema://fraud/transactions/v1",
+  "parent_version": null,
+  "quality_report_id": "qr-ds-transactions-v1"
+}

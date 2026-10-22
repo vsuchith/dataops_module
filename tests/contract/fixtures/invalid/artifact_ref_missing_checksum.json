@@ -1,0 +1,11 @@
+{
+  "artifact_id": "ds.transactions",
+  "version": "v1.0.0",
+  "kind": "structured_table",
+  "uri": "file:///data/bronze/transactions/v1",
+  "checksum": {
+    "algorithm": "sha256",
+    "value": ""
+  },
+  "state": "published"
+}

@@ -1,0 +1,24 @@
+{
+  "cases": [
+    {
+      "model": "artifact_ref",
+      "valid": ["artifact_ref_published.json", "cv_manifest_artifact.json"],
+      "invalid": ["artifact_ref_missing_checksum.json"]
+    },
+    {
+      "model": "lineage_edge",
+      "valid": ["lineage_edge.json", "lineage_edge_cv_manifest.json"],
+      "invalid": ["lineage_edge_missing_run.json"]
+    },
+    {
+      "model": "quality_report",
+      "valid": ["quality_report.json"],
+      "invalid": []
+    },
+    {
+      "model": "dataset_version",
+      "valid": ["dataset_version.json", "dataset_version_image_collection.json"],
+      "invalid": ["dataset_version_no_artifacts.json"]
+    }
+  ]
+}

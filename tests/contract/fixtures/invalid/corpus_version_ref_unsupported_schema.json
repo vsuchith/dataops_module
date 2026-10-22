@@ -1,0 +1,9 @@
+{
+  "corpus_id": "ref.corpus.demo",
+  "version": "v-bad-schema",
+  "schema_version": "2.0.0",
+  "document_manifest_refs": ["ref.corpus.demo.document_manifest@v1"],
+  "element_set_refs": ["ref.corpus.demo.element_set@v1"],
+  "checksum": "deadbeef",
+  "parser_profile": "reference-txt-md-html-v1"
+}

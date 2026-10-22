@@ -1,0 +1,22 @@
+# Keep Docker build context small (G2 Compose CV smoke).
+.venv
+.git
+.gitignore
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+.dataops-local
+*.egg-info
+dist
+build
+node_modules
+.cursor
+*.AppImage
+.hypothesis
+.coverage
+htmlcov
+*.log
+*.md
+!deploy/docker/**/*.md

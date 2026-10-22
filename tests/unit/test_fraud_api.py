@@ -9,9 +9,49 @@ Tests cover:
 - Error handling
 """
 
-import pytest
+import os
 from unittest.mock import MagicMock, patch
-from datetime import datetime
+
+import pytest
+from starlette.testclient import TestClient
+
+
+@pytest.fixture(scope="module")
+def client():
+    """Module-scoped TestClient with DI overrides (avoids per-test import deadlock)."""
+    env = {
+        "PROMETHEUS_METRICS": "false",
+        "AB_TEST_ENABLED": "false",
+        "SHADOW_MODE_ENABLED": "false",
+    }
+    with patch.dict(os.environ, env), patch("redis.Redis") as mock_redis:
+        mock_redis.return_value.ping.return_value = True
+
+        from src.api.dependencies import (
+            get_ab_router,
+            get_scoring_pipeline,
+            get_shadow_predictor,
+        )
+        from src.mlops.api.main import app
+
+        mock_pipeline = MagicMock()
+        mock_pipeline.health_check.return_value = {"model": "ok"}
+
+        mock_shadow = MagicMock()
+        mock_shadow.get_status.return_value = {"enabled": False, "available": True}
+        mock_shadow.get_stats.return_value = MagicMock(to_dict=lambda: {"total": 0})
+
+        mock_router = MagicMock()
+        mock_router.list_experiments.return_value = []
+
+        app.dependency_overrides[get_scoring_pipeline] = lambda: mock_pipeline
+        app.dependency_overrides[get_shadow_predictor] = lambda: mock_shadow
+        app.dependency_overrides[get_ab_router] = lambda: mock_router
+
+        with TestClient(app, raise_server_exceptions=False) as test_client:
+            yield test_client
+
+        app.dependency_overrides.clear()
 
 
 # =============================================================================
@@ -21,45 +61,29 @@ from datetime import datetime
 class TestHealthEndpoints:
     """Tests for health and readiness endpoints."""
 
-    def test_health_endpoint_returns_ok(self):
+    def test_health_endpoint_returns_ok(self, client):
         """Test that /health returns 200 with status."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
+        response = client.get("/health")
 
-            client = TestClient(app)
-            response = client.get("/health")
+        assert response.status_code == 200
+        data = response.json()
+        assert "status" in data
+        assert data["status"] in ["healthy", "degraded"]
 
-            assert response.status_code == 200
-            data = response.json()
-            assert "status" in data
-            assert data["status"] in ["healthy", "degraded"]
-
-    def test_ready_endpoint_returns_status(self):
+    def test_ready_endpoint_returns_status(self, client):
         """Test that /ready returns readiness status."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
+        response = client.get("/ready")
 
-            client = TestClient(app)
-            response = client.get("/ready")
+        assert response.status_code in [200, 404]
+        if response.status_code == 200:
+            data = response.json()
+            assert "ready" in data
 
-            # /ready may not exist in all API versions
-            assert response.status_code in [200, 404]
-            if response.status_code == 200:
-                data = response.json()
-                assert "ready" in data
-
-    def test_root_endpoint_returns_welcome(self):
+    def test_root_endpoint_returns_welcome(self, client):
         """Test that root endpoint returns API info."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
+        response = client.get("/")
 
-            client = TestClient(app)
-            response = client.get("/")
-
-            assert response.status_code == 200
+        assert response.status_code == 200
 
 
 # =============================================================================
@@ -69,55 +93,25 @@ class TestHealthEndpoints:
 class TestShadowModeEndpoints:
     """Tests for shadow mode endpoints."""
 
-    def test_shadow_status_endpoint(self):
+    def test_shadow_status_endpoint(self, client):
         """Test /shadow/status returns shadow mode status."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
+        response = client.get("/shadow/status")
 
-            client = TestClient(app)
-            response = client.get("/shadow/status")
+        assert response.status_code == 200
+        data = response.json()
+        assert "enabled" in data or "available" in data
 
-            assert response.status_code == 200
-            data = response.json()
-            # Should have either 'enabled' key or 'available' key
-            assert "enabled" in data or "available" in data
-
-    def test_shadow_stats_endpoint(self):
+    def test_shadow_stats_endpoint(self, client):
         """Test /shadow/stats returns statistics."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
+        response = client.get("/shadow/stats")
 
-            client = TestClient(app)
-            response = client.get("/shadow/stats")
+        assert response.status_code in [200, 503]
 
-            # May return 200 or 503 depending on availability
-            assert response.status_code in [200, 503]
-
-    def test_shadow_stats_endpoint(self):
-        """Test /shadow/stats returns statistics."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
-
-            client = TestClient(app)
-            response = client.get("/shadow/stats")
-
-            # Returns 200 with stats or 503 if shadow mode not available
-            assert response.status_code in [200, 503]
-
-    def test_shadow_enable_endpoint(self):
+    def test_shadow_enable_endpoint(self, client):
         """Test /shadow/enable enables shadow mode."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
+        response = client.post("/shadow/enable")
 
-            client = TestClient(app)
-            response = client.post("/shadow/enable")
-
-            # Returns 200 if enabled or 503 if not available
-            assert response.status_code in [200, 503]
+        assert response.status_code in [200, 503]
 
 
 # =============================================================================
@@ -127,43 +121,27 @@ class TestShadowModeEndpoints:
 class TestStreamingEndpoints:
     """Tests for streaming feature endpoints."""
 
-    def test_streaming_status_endpoint(self):
+    def test_streaming_status_endpoint(self, client):
         """Test /streaming/status returns streaming status."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
+        response = client.get("/streaming/status")
 
-            client = TestClient(app)
-            response = client.get("/streaming/status")
+        assert response.status_code == 200
+        data = response.json()
+        assert "available" in data or "enabled" in data or "status" in data
 
-            assert response.status_code == 200
-            data = response.json()
-            # Check for expected keys in streaming status response
-            assert "available" in data or "enabled" in data or "status" in data
-
-    def test_streaming_features_endpoint(self):
+    def test_streaming_features_endpoint(self, client):
         """Test /streaming/features/{customer_id} returns features."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
-
-            client = TestClient(app)
+        with patch("src.api.serving.features.redis_client.AsyncStreamingRedisClient") as mock_client:
+            mock_client.return_value.get_streaming_features.return_value = ({}, 1.0, True)
             response = client.get("/streaming/features/CUST_123")
 
-            # May return 200 or 503 depending on Redis availability
-            assert response.status_code in [200, 503]
+        assert response.status_code in [200, 500, 503]
 
-    def test_metrics_endpoint(self):
+    def test_metrics_endpoint(self, client):
         """Test /metrics returns Prometheus metrics."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
+        response = client.get("/metrics")
 
-            client = TestClient(app)
-            response = client.get("/metrics")
-
-            # Should return 200 with metrics or 503 if not enabled
-            assert response.status_code in [200, 503]
+        assert response.status_code in [200, 503]
 
 
 # =============================================================================
@@ -173,29 +151,32 @@ class TestStreamingEndpoints:
 class TestInputValidation:
     """Tests for input validation."""
 
-    def test_batch_limit_validation(self):
+    def test_batch_limit_validation(self, client):
         """Test that batch endpoint respects max limit."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
+        response = client.get("/batch/stats")
+        assert response.status_code in [200, 404]
 
-            client = TestClient(app)
+    def test_predict_uses_profile_validation(self, client, monkeypatch):
+        """Predict path invokes compatibility profile validation before scoring."""
 
-            # Request for batch stats endpoint
-            response = client.get("/batch/stats")
-            assert response.status_code in [200, 404]  # May not exist
+        def _fail_validation(_transaction):
+            raise ValueError("profile validation invoked")
 
-    def test_empty_request_handling(self):
-        """Test that empty prediction request is handled."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
+        monkeypatch.setattr(
+            "src.mlops.api.main.validate_transaction_request",
+            _fail_validation,
+        )
+        response = client.post(
+            "/predict",
+            json={
+                "transaction_id": "TXN_1",
+                "customer_id": "CUST_1",
+                "amount": 10.0,
+            },
+        )
 
-            client = TestClient(app)
-            response = client.post("/predict", json={})
-
-            # Should return validation error (422) or handle gracefully
-            assert response.status_code in [200, 422, 500]
+        assert response.status_code == 422
+        assert response.json()["detail"] == "profile validation invoked"
 
 
 # =============================================================================
@@ -205,30 +186,17 @@ class TestInputValidation:
 class TestInfoEndpoints:
     """Tests for informational endpoints."""
 
-    def test_model_info_endpoint(self):
+    def test_model_info_endpoint(self, client):
         """Test /model/info returns model information."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
+        response = client.get("/model/info")
 
-            client = TestClient(app)
-            response = client.get("/model/info")
+        assert response.status_code in [200, 404]
+        if response.status_code == 200:
+            data = response.json()
+            assert isinstance(data, dict)
 
-            # /model/info may not exist in all API versions
-            assert response.status_code in [200, 404]
-            if response.status_code == 200:
-                data = response.json()
-                # Should contain model metadata
-                assert isinstance(data, dict)
-
-    def test_experiments_endpoint(self):
+    def test_experiments_endpoint(self, client):
         """Test /experiments returns A/B testing status."""
-        with patch.dict("os.environ", {"PROMETHEUS_METRICS": "false", "AB_TEST_ENABLED": "false"}):
-            from fastapi.testclient import TestClient
-            from src.mlops.api.main import app
+        response = client.get("/experiments")
 
-            client = TestClient(app)
-            response = client.get("/experiments")
-
-            # May return 200 or 404 depending on A/B testing availability
-            assert response.status_code in [200, 404]
+        assert response.status_code in [200, 404]

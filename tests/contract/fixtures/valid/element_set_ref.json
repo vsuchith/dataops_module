@@ -1,0 +1,14 @@
+{
+  "element_set_id": "ref.corpus.demo.elements",
+  "version": "v1",
+  "parent_manifest_ref": "ref.corpus.demo.document_manifest@v1",
+  "extraction_profile": "reference-txt-md-html-v1",
+  "elements": [
+    {
+      "element_id": "doc_alpha:e1",
+      "element_type": "heading",
+      "content": "Section One",
+      "source_document_id": "doc_alpha"
+    }
+  ]
+}

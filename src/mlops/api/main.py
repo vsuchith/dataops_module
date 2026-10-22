@@ -49,6 +49,7 @@ from pydantic import BaseModel, Field
 
 from src.api.settings import api_settings, APISettings
 from src.core.api.models import TransactionRequest, PredictionResponse
+from src.compatibility.fraud.api import validate_transaction_request
 from src.api.dependencies import (
     get_settings,
     get_scoring_pipeline,
@@ -159,6 +160,7 @@ def predict(
 ):
     """Single transaction fraud prediction."""
     try:
+        validate_transaction_request(transaction)
         from src.api.serving import RequestContext
 
         context = RequestContext(
@@ -215,6 +217,8 @@ def predict(
 
     except HTTPException:
         raise
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
