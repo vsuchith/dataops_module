@@ -1,0 +1,4 @@
+transaction_id,customer_id,amount,is_fraudulent,merchant_category
+TXN_001,CUST_123,150.00,0,electronics
+TXN_002,CUST_456,9500.00,1,cash_advance
+TXN_003,CUST_789,75.50,0,retail

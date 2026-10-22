@@ -1,0 +1,21 @@
+{
+  "report_id": "qr-ds-transactions-v1",
+  "artifact_id": "ds.transactions",
+  "artifact_version": "v1.0.0",
+  "checks": [
+    {
+      "name": "schema_valid",
+      "severity": "critical",
+      "passed": true,
+      "message": "schema matches contract"
+    },
+    {
+      "name": "row_count_positive",
+      "severity": "warning",
+      "passed": true
+    }
+  ],
+  "pass_fail": true,
+  "evaluated_at": "2026-07-30T11:00:00+00:00",
+  "evaluator_run_id": "run-qc-001"
+}

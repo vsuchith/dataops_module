@@ -1,0 +1,14 @@
+{
+  "corpus_id": "ref.corpus.demo",
+  "version": "v2026.07.30",
+  "schema_version": "1.0.0",
+  "document_manifest_refs": ["ref.corpus.demo.document_manifest@v2026.07.30"],
+  "element_set_refs": ["ref.corpus.demo.element_set@v2026.07.30"],
+  "embedding_set_refs": ["ref.corpus.demo.embeddings@v2026.07.30"],
+  "index_ref": "ref.corpus.demo.reference_index@v2026.07.30",
+  "checksum": "a1b2c3d4e5f6789012345678abcdef01",
+  "parser_profile": "reference-txt-md-html-v1",
+  "security_labels": ["internal"],
+  "quality_report_id": "qr-ref-corpus-v1",
+  "lineage_run_id": "run-e4-handoff"
+}

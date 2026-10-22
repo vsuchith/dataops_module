@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dagster-unified-platform"
-version = "2.1.0"
+version = "2.1.0-rc.1"
 description = "Unified MLOps/CVOps/LLMOps platform with multi-source support"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -41,8 +41,9 @@ dependencies = [
     "pyodbc>=5.0.0",           # SQL Server
     "sqlalchemy>=2.0.0",
     
-    # Data Processing
-    "pandas>=2.2.0",  # pandas 2.2+ supports numpy 2.x
+    # Data Processing (numpy 2.0–2.1: feast 0.57 requires >=2; avoid 2.5+ ABI drift)
+    "numpy>=2.0.0,<2.2.0",
+    "pandas>=2.2.0,<2.3.0",
     "pyarrow==17.0.0",
     "duckdb==0.10.0",
     
@@ -86,7 +87,6 @@ cv = [
     # Image Processing
     "opencv-python-headless>=4.8.0",  # Headless for servers
     "Pillow>=10.0.0",
-    "numpy>=1.24.0",
     
     # Image utilities
     "imagehash>=4.3.0",        # Perceptual hashing for deduplication
@@ -119,6 +119,9 @@ dev = [
     "flake8>=6.1.0",
     "mypy>=1.5.0",
     "pre-commit>=3.3.0",
+    "httpx>=0.25.0,<0.28.0",
+    "safety==3.2.11",
+    "pyyaml>=6.0",
 ]
 
 # Notebook Dependencies
@@ -216,7 +219,7 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
-source = ["src/api", "src/pipelines", "src/streaming"]
+source = ["src"]
 omit = [
     "**/tests/*",
     "**/__pycache__/*",

@@ -1,0 +1,39 @@
+profile_id: "reference_corpus"
+version: "1.0.0"
+parser_profile: "reference-txt-md-html-v1"
+security_labels:
+  - internal
+
+sources:
+  - name: fixture_docs
+    format: markdown
+    uri_pattern: "profiles/reference_corpus/fixtures/*.md"
+    description: Markdown fixtures for offline tests
+  - name: fixture_txt
+    format: txt
+    uri_pattern: "profiles/reference_corpus/fixtures/*.txt"
+  - name: fixture_html
+    format: html
+    uri_pattern: "profiles/reference_corpus/fixtures/*.html"
+
+datasets:
+  - name: corpus
+    corpus_id: "ref.corpus.demo"
+    artifact_id: "llm.corpus.handoff"
+    catalog_table: "bronze.reference_corpus"
+    source_ref: fixture_docs
+    schema_ref: "schema://reference/corpus/v1"
+
+quality_checks:
+  - name: corpus_non_empty
+    severity: critical
+    rule: "count(elements) > 0"
+  - name: unique_source_ids
+    severity: critical
+    rule: "unique(document.source_id)"
+  - name: unique_document_checksums
+    severity: critical
+    rule: "unique(document.checksum)"
+  - name: unique_element_ids
+    severity: critical
+    rule: "unique(element.element_id)"

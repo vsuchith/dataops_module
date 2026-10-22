@@ -1,0 +1,27 @@
+{
+  "cases": [
+    {
+      "model": "corpus_version_ref",
+      "valid": ["corpus_version_ref.json"],
+      "invalid": [
+        "corpus_version_ref_missing_manifest.json",
+        "corpus_version_ref_unsupported_schema.json"
+      ]
+    },
+    {
+      "model": "document_manifest_ref",
+      "valid": ["document_manifest_ref.json"],
+      "invalid": []
+    },
+    {
+      "model": "element_set_ref",
+      "valid": ["element_set_ref.json"],
+      "invalid": []
+    },
+    {
+      "model": "derived_artifact_ref",
+      "valid": ["derived_artifact_ref.json"],
+      "invalid": []
+    }
+  ]
+}

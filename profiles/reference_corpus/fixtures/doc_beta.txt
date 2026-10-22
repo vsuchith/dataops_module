@@ -1,0 +1,2 @@
+Plain text fixture for reference corpus ingestion.
+Second line ensures multiple elements can be extracted.

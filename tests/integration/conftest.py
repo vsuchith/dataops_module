@@ -182,7 +182,7 @@ def cv_api_client():
 
     base_url = os.getenv("CV_API_URL", "http://localhost:8002")
 
-    client = httpx.Client(base_url=base_url, timeout=60.0)
+    client = httpx.Client(base_url=base_url, timeout=10.0)
 
     # Check if API is available
     try:

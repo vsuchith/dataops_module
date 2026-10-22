@@ -1,0 +1,11 @@
+{
+  "artifact_id": "ref.corpus.demo.embeddings",
+  "version": "v1",
+  "recipe_id": "llmops.deterministic-hash-embed-v1",
+  "recipe_version": "1.0.0",
+  "producer": "llmops",
+  "input_refs": ["ref.corpus.demo.element_set@v1"],
+  "output_uri": "file:///ref.corpus.demo.embeddings/v1",
+  "checksum": "feedface",
+  "semantic_owner": "llmops"
+}

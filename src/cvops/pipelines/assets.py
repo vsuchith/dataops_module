@@ -45,7 +45,7 @@ from src.core.resources import (
 )
 
 # Import CV-specific resources
-from cvops.pipelines.resources import (
+from src.cvops.pipelines.resources import (
     YOLOModelResource,
     CVImageStorageResource,
     CVIcebergResource,
@@ -407,6 +407,21 @@ def cvops_create_manifest(
     # Filter to supported image formats
     supported_formats = [".jpg", ".jpeg", ".png", ".webp"]
     image_keys = [k for k in image_keys if any(k.lower().endswith(ext) for ext in supported_formats)]
+
+    manifest_entries: list[dict[str, Any]] = []
+    for key in image_keys:
+        if use_lakefs:
+            full_path = f"lakefs://{settings.cvops.repo}/{settings.cvops.branch}/{key}"
+        else:
+            full_path = f"s3://{raw_bucket}/{key}"
+        manifest_entries.append(
+            {
+                "image_id": uuid.uuid5(uuid.NAMESPACE_URL, full_path).hex,
+                "source_type": "batch_scan",
+                "original_path": full_path,
+                "format": key.split(".")[-1].lower(),
+            }
+        )
     
     # Get existing keys
     existing_keys = set()
@@ -461,14 +476,32 @@ def cvops_create_manifest(
         total = new_count
     
     context.log.info(f"Manifest has {total} images ({new_count} new)")
+
+    metadata: dict[str, Any] = {
+        "total_images": total,
+        "new_images": new_count,
+        "storage": storage_location,
+    }
+
+    if os.getenv("CVOPS_KERNEL_MANIFEST", "").lower() in ("1", "true", "yes"):
+        from src.cvops.compatibility.manifest import (
+            ingest_manifest_from_entries,
+            manifest_version_id,
+        )
+        from src.cvops.compatibility.settings_bridge import default_cvops_profile
+
+        if not manifest_entries:
+            raise RuntimeError("kernel manifest ingest requires at least one image entry")
+        kernel_meta = ingest_manifest_from_entries(
+            manifest_entries,
+            profile=default_cvops_profile(),
+            run_id=str(context.run_id) if context.run_id else "cvops-manifest",
+            version_id=manifest_version_id(manifest_entries),
+            backend_root=Path(os.getenv("CVOPS_KERNEL_ROOT", ".dataops-local")),
+        )
+        metadata.update(kernel_meta)
     
-    return MaterializeResult(
-        metadata={
-            "total_images": total,
-            "new_images": new_count,
-            "storage": storage_location,
-        }
-    )
+    return MaterializeResult(metadata=metadata)
 
 
 # =============================================================================

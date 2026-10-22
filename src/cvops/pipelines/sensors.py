@@ -39,7 +39,7 @@ from dagster import (
 
 from src.core.resources import TrinoResource, LabelStudioResource
 from src.core.config import settings, TRINO_CATALOG, escape_sql_string, validate_identifier
-from cvops.pipelines.resources import CVKafkaIngestResource
+from src.cvops.pipelines.resources import CVKafkaIngestResource
 
 
 # =============================================================================

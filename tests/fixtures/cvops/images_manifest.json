@@ -1,0 +1,22 @@
+{
+  "images": [
+    {
+      "image_id": "img-001",
+      "original_path": "lakefs://cv-data/dev/raw/images/sample1.jpg",
+      "format": "jpg",
+      "source_type": "fixture"
+    },
+    {
+      "image_id": "img-002",
+      "original_path": "lakefs://cv-data/dev/raw/images/sample2.png",
+      "format": "png",
+      "source_type": "fixture"
+    },
+    {
+      "image_id": "img-003",
+      "original_path": "lakefs://cv-data/dev/raw/images/sample3.webp",
+      "format": "webp",
+      "source_type": "fixture"
+    }
+  ]
+}

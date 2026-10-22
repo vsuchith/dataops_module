@@ -1,0 +1,11 @@
+{
+  "handoff_schema_version": "1.0.0",
+  "corpus_version_ref_model": "corpus_version_ref",
+  "frozen_at": "2026-07-30",
+  "genera_consumer": "offline-index-builder-g1",
+  "pins": {
+    "parser_profile": "reference-txt-md-html-v1",
+    "embedding_recipe": "llmops.deterministic-hash-embed-v1@1.0.0",
+    "index_recipe": "llmops.local-reference-index-v1@1.0.0"
+  }
+}

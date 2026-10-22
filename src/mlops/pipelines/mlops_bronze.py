@@ -41,7 +41,7 @@ BRONZE_RETRY = RetryPolicy(
 def load_bronze_sources_config() -> Dict:
     """
     Load Bronze sources configuration.
-    Priority: Environment Variables > YAML Config > Defaults
+    Priority: Environment Variables > Profile YAML > YAML Config > Defaults
     
     Returns:
         Dict with 'sources' key containing list of source configurations
@@ -51,8 +51,15 @@ def load_bronze_sources_config() -> Dict:
     env_tables = os.getenv("BRONZE_TABLES")
     if env_tables:
         return parse_env_tables(env_tables)
+
+    # Priority 2: Fraud detection profile (E2.2) — fail closed when selected
+    from src.mlops.profile import load_profile_bronze_config
+
+    profile_config = load_profile_bronze_config()
+    if profile_config is not None:
+        return profile_config
     
-    # Priority 2: YAML configuration file
+    # Priority 3: YAML configuration file
     config_path = os.getenv("BRONZE_CONFIG", "config/bronze_sources.yaml")
     if os.path.exists(config_path):
         try:

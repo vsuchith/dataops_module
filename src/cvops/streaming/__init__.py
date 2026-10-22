@@ -13,6 +13,6 @@ Usage:
     run_consumer()
 """
 
-from cvops.streaming.ingest_consumer import run_consumer
+from src.cvops.streaming.ingest_consumer import run_consumer
 
 __all__ = ["run_consumer"]

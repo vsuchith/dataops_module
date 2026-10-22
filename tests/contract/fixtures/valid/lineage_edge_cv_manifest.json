@@ -1,0 +1,11 @@
+{
+  "source_artifact_id": "cv.raw.images",
+  "source_version": "v0",
+  "target_artifact_id": "cv.image_manifest",
+  "target_version": "v1.0.0",
+  "operation": "ingest",
+  "run_id": "run-cv-manifest-001",
+  "metadata": {
+    "profile_id": "object_detection"
+  }
+}

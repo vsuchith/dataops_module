@@ -1,0 +1,78 @@
+profile_id: "fraud_detection"
+version: "1.0.0"
+
+lakefs:
+  bronze_repository: bronze
+  warehouse_repository: warehouse
+  dev_branch: dev
+  main_branch: main
+
+sources:
+  - name: batch_parquet
+    kind: batch
+    format: parquet
+    uri_pattern: "data/*.parquet"
+    description: Default LakeFS parquet batch ingest
+  - name: batch_csv
+    kind: batch
+    format: csv
+    uri_pattern: "profiles/fraud_detection/fixtures/*.csv"
+    description: Local CSV fixtures for offline tests
+
+cdc_sources:
+  - name: fraud_transactions_cdc
+    kind: cdc
+    topic: fraud.demo.fraud_transactions
+    primary_key: transaction_id
+    format: json
+    description: Demo CDC/event stream shape
+
+datasets:
+  - name: bronze
+    catalog_table: bronze.fraud_transactions
+    primary_key: transaction_id
+    label_column: is_fraudulent
+    source_ref: batch_parquet
+    schema_ref: "schema://fraud/transactions/v1"
+    partitions: []
+  - name: silver
+    catalog_table: silver.fraud_transactions
+    primary_key: transaction_id
+    label_column: is_fraudulent
+    schema_ref: "schema://fraud/transactions/v1"
+  - name: gold
+    catalog_table: gold.fraud_training_data
+    primary_key: transaction_id
+    label_column: is_fraudulent
+    schema_ref: "schema://fraud/training/v1"
+
+transforms:
+  - name: bronze_to_silver
+    from_dataset: bronze
+    to_dataset: silver
+  - name: silver_to_gold
+    from_dataset: silver
+    to_dataset: gold
+
+quality_checks:
+  - name: primary_key_present
+    severity: critical
+    rule: "transaction_id IS NOT NULL"
+  - name: label_column_valid
+    severity: warning
+    rule: "is_fraudulent IN (0, 1)"
+
+promotion_policy:
+  target_stage: Production
+  require_quality_pass: true
+  min_training_samples: 50
+
+mlflow:
+  experiment: fraud-detection
+  model_name: fraud-detector
+
+feast:
+  feature_service: fraud_detection_v1
+  repo_path: /app/feast_repo
+
+streaming_enabled: true

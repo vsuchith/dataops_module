@@ -1,0 +1,9 @@
+{
+  "dataset_id": "cv.image_collection",
+  "version_id": "v2026.07.30",
+  "modality": "image_collection",
+  "physical_artifact_ids": ["cv.image_manifest"],
+  "schema_or_manifest_ref": "manifest://cv/image_collection/v1",
+  "parent_version": null,
+  "quality_report_id": "qr-cv.image_manifest-v1.0.0"
+}
