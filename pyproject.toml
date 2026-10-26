@@ -43,8 +43,8 @@ dependencies = [
     
     # Data Processing (numpy 2.0–2.1: feast 0.57 requires >=2; avoid 2.5+ ABI drift)
     "numpy>=2.0.0,<2.2.0",
-    "pandas>=2.2.0,<2.3.0",
-    "pyarrow==17.0.0",
+    "pandas>=2.2.0,<2.4.0",
+    "pyarrow==25.0.1",
     "duckdb==0.10.0",
     
     # API & Requests
